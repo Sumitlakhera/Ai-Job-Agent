@@ -1,6 +1,7 @@
 from utils.pdf_parser import extract_text_from_pdf
 from groq import Groq
 import os
+import json
 
 def parse_resume(file):
     api_key = os.getenv("GROQ_API_KEY")
@@ -17,7 +18,7 @@ def parse_resume(file):
     2. Experience
     3. Projects
 
-    Return STRICT JSON:
+    Return ONLY valid JSON. Do NOT include markdown, backticks, or explanation:
     {{
         "skills": [],
         "experience": [],
@@ -35,7 +36,19 @@ def parse_resume(file):
         ]
     )
 
+    raw_output = response.choices[0].message.content
+
+    cleaned_output = raw_output.replace("```json", "").replace("```", "").strip()
+
+    try:
+        structured_data = json.loads(cleaned_output)
+    except Exception as e:
+        structured_data = {
+        "error": "Failed to parse JSON",
+        "raw_output": raw_output
+    }
+
     return {
-        "structured_data": response.choices[0].message.content,
-        "preview": text[:500]
+    "structured_data": structured_data,
+    "preview": text[:500]
     }

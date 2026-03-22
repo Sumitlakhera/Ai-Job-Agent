@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
 from flask import Flask
 from routes.resume_routes import resume_bp
 

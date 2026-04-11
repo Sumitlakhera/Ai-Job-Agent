@@ -4,10 +4,12 @@ load_dotenv()
 
 from flask import Flask
 from routes.resume_routes import resume_bp
+from routes.job_routes import job_bp
 
 app = Flask(__name__)
 
 app.register_blueprint(resume_bp)
+app.register_blueprint(job_bp)
 
 @app.route("/")
 def home():

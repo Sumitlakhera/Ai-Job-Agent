@@ -56,8 +56,6 @@ def parse_resume(file):
 
     USER_RESUME_DATA["skills"] = list(set(normalized_skills))
 
-    print("DEBUG: Stored Skills:", USER_RESUME_DATA["skills"])
-
     return {
     "structured_data": structured_data,
     "preview": text[:500]

@@ -137,46 +137,51 @@ def calculate_match(resume_skills, job_skills):
 
 
 
-def generate_match_explanation(match_score, matched_skills, missing_skills):
+def generate_batch_explanations(jobs):
     try:
-        # basic guard
-        if not matched_skills and not missing_skills:
-            return "Not enough data to evaluate this job."
-
         api_key = os.getenv("GROQ_API_KEY")
         client = Groq(api_key=api_key)
 
         prompt = f"""
         You are an AI career assistant.
 
-        Explain how well a candidate matches a job.
+        For EACH job below, independently evaluate the candidate fit.
 
-        Match Score: {match_score}%
-        Matched Skills: {matched_skills}
-        Missing Skills: {missing_skills}
+        STRICT RULES:
+            - Each job MUST be evaluated independently
+            - DO NOT compare jobs with each other
+            - DO NOT reference other jobs
+            - DO NOT say "similar to", "compared to", etc.
 
-        Rules:
-        - Start with overall fit (Strong / Moderate / Low)
-        - Mention key matched skills
-        - Mention missing critical skills (if any)
-        - Keep it concise (max 3 sentences)
-        - No markdown, no JSON
+        For each job:
+            - Start with Strong / Moderate / Low fit
+            - Mention 2 to 3 matched skills
+            - Mention 1 to 2 important missing skills (if any)
+            - Be specific, not generic
+            - Max 2 sentences
 
-        Output only plain text.
+        Return ONLY valid JSON list:
+        [
+            {{"title": "...", "explanation": "..."}}
+        ]
+
+        Jobs:
+        {json.dumps(jobs, indent=2)}
         """
 
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
+            messages=[{"role": "user", "content": prompt}]
         )
 
-        return response.choices[0].message.content.strip()
+        raw = response.choices[0].message.content
+        cleaned = raw.replace("```json", "").replace("```", "").strip()
+
+        return json.loads(cleaned)
 
     except Exception as e:
-        print("DEBUG EXPLANATION ERROR:", str(e))
-        return "Could not generate explanation."
+        print("DEBUG BATCH ERROR:", str(e))
+        return []
 
 
 def fetch_jobs(query, location):
@@ -253,12 +258,6 @@ def fetch_jobs(query, location):
                     )
                
             print("DEBUG MATCH:", match_score, matched_skills)
-
-            explanation = generate_match_explanation(
-                match_score,
-                matched_skills,
-                missing_skills
-            )
             
 
             jobs.append({
@@ -271,9 +270,25 @@ def fetch_jobs(query, location):
                 "match_score": match_score,
                 "matched_skills": matched_skills,
                 "missing_skills": missing_skills,
-                "apply_link": apply_link,
-                "explanation": explanation,
+                "apply_link": apply_link
             })
+        
+        jobs_for_llm = [
+            {
+                "title": job["title"],
+                "match_score": job["match_score"],
+                "matched_skills": job["matched_skills"],
+                "missing_skills": job["missing_skills"]
+            }
+            for job in jobs
+        ]
+
+        batch_results = generate_batch_explanations(jobs_for_llm)
+
+        explanation_map = {j["title"]: j["explanation"] for j in batch_results}
+
+        for job in jobs:
+            job["explanation"] = explanation_map.get(job["title"], "No explanation available")
 
             
     # sort jobs by match_score (highest first)

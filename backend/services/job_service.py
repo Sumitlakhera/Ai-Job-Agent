@@ -34,7 +34,8 @@ def fetch_jobs(query, location):
     jobs = []
 
     if "jobs_results" in data:
-        for job in data["jobs_results"]:
+        job_results = data["jobs_results"][:5]  # limit to top 5 jobs
+        for job in job_results:
             apply_link = None
 
             if "related_links" in job and len(job["related_links"]) > 0:

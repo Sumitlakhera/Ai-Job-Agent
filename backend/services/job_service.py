@@ -94,6 +94,47 @@ def calculate_match(resume_skills, job_skills):
 
     return round(score, 2), list(set(matched)), list(set(missing))
 
+def generate_match_explanation(match_score, matched_skills, missing_skills):
+    try:
+        # basic guard
+        if not matched_skills and not missing_skills:
+            return "Not enough data to evaluate this job."
+
+        api_key = os.getenv("GROQ_API_KEY")
+        client = Groq(api_key=api_key)
+
+        prompt = f"""
+        You are an AI career assistant.
+
+        Explain how well a candidate matches a job.
+
+        Match Score: {match_score}%
+        Matched Skills: {matched_skills}
+        Missing Skills: {missing_skills}
+
+        Rules:
+        - Start with overall fit (Strong / Moderate / Low)
+        - Mention key matched skills
+        - Mention missing critical skills (if any)
+        - Keep it concise (max 3 sentences)
+        - No markdown, no JSON
+
+        Output only plain text.
+        """
+
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        return response.choices[0].message.content.strip()
+
+    except Exception as e:
+        print("DEBUG EXPLANATION ERROR:", str(e))
+        return "Could not generate explanation."
+
 
 def fetch_jobs(query, location):
     url = "https://serpapi.com/search"
@@ -149,6 +190,12 @@ def fetch_jobs(query, location):
                 )
 
             print("DEBUG MATCH:", match_score, matched_skills)
+
+            explanation = generate_match_explanation(
+                match_score,
+                matched_skills,
+                missing_skills
+            )
             
 
             jobs.append({
@@ -161,7 +208,8 @@ def fetch_jobs(query, location):
                 "match_score": match_score,
                 "matched_skills": matched_skills,
                 "missing_skills": missing_skills,
-                "apply_link": apply_link
+                "apply_link": apply_link,
+                "explanation": explanation,
             })
 
             

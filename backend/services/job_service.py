@@ -4,6 +4,9 @@ from groq import Groq
 import os
 import json
 import re
+from sentence_transformers import SentenceTransformer, util
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def load_resume_data():
     try:
@@ -67,6 +70,33 @@ def extract_skills_with_llm(text):
 
     return list(set(skills))
 
+def semantic_match(resume_skills, job_skills, threshold=0.6):
+    if not job_skills:
+        return 0, [], []
+
+    resume_skills = normalize_and_split_skills(resume_skills)
+    job_skills = normalize_and_split_skills(job_skills)
+
+    matched = []
+    missing = []
+
+    resume_embeddings = model.encode(resume_skills, convert_to_tensor=True)
+    job_embeddings = model.encode(job_skills, convert_to_tensor=True)
+
+    for i, job_emb in enumerate(job_embeddings):
+        similarities = util.cos_sim(job_emb, resume_embeddings)[0]
+
+        max_score = similarities.max().item()
+
+        if max_score >= threshold:
+            matched.append(job_skills[i])
+        else:
+            missing.append(job_skills[i])
+
+    score = (len(matched) / len(job_skills)) * 100 if job_skills else 0
+
+    return round(score, 2), list(set(matched)), list(set(missing))
+
 def calculate_match(resume_skills, job_skills):
     if not job_skills:
         return 0, [], []
@@ -93,6 +123,8 @@ def calculate_match(resume_skills, job_skills):
     score = (len(matched) / len(job_skills)) * 100 if job_skills else 0
 
     return round(score, 2), list(set(matched)), list(set(missing))
+
+
 
 def generate_match_explanation(match_score, matched_skills, missing_skills):
     try:
@@ -184,10 +216,10 @@ def fetch_jobs(query, location):
             if not resume_skills:
                 match_score, matched_skills, missing_skills = 0, [], job_skills
             else:
-                match_score, matched_skills, missing_skills = calculate_match(
+                match_score, matched_skills, missing_skills = semantic_match(
                 resume_skills,
                 job_skills
-                )
+            )
 
             print("DEBUG MATCH:", match_score, matched_skills)
 

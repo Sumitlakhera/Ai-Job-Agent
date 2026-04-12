@@ -14,6 +14,17 @@ def load_resume_data():
             return json.load(f)
     except:
         return {"skills": []}
+    
+def load_job_cache():
+    try:
+        with open("job_cache.json", "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_job_cache(cache):
+    with open("job_cache.json", "w") as f:
+        json.dump(cache, f, indent=2)
 
 def normalize_and_split_skills(skills):
     normalized = []
@@ -169,6 +180,7 @@ def generate_match_explanation(match_score, matched_skills, missing_skills):
 
 
 def fetch_jobs(query, location):
+    job_cache = load_job_cache()
     url = "https://serpapi.com/search"
 
     search_query = f"{query} jobs"
@@ -184,12 +196,14 @@ def fetch_jobs(query, location):
     print("DEBUG: API KEYS:", data.keys())
     print("DEBUG: JOB COUNT:", len(data.get("jobs_results", [])))
     print("DEBUG ERROR:", data.get("error"))
+
     jobs = []
 
     if "jobs_results" in data:
         job_results = data["jobs_results"][:5]  # limit to top 5 jobs
         resume_data = load_resume_data()
         resume_skills = resume_data.get("skills", [])
+
         for job in job_results:
             print("DEBUG: PROCESSING JOB:", job.get("title"))
             apply_link = None
@@ -210,7 +224,16 @@ def fetch_jobs(query, location):
 
             combined_text = f"{title} {description}"
 
-            job_skills = extract_skills_with_llm(combined_text)
+            cache_key = f"{title}_{job.get('company_name')}"
+
+            if cache_key in job_cache:
+                print("DEBUG: CACHE HIT:", cache_key)
+                job_skills = job_cache[cache_key]
+            else:
+                print("DEBUG: CACHE MISS:", cache_key)
+                job_skills = extract_skills_with_llm(combined_text)
+                job_cache[cache_key] = job_skills
+
             print("DEBUG: JOB SKILLS:", job_skills)
 
             if not resume_skills:
@@ -255,4 +278,5 @@ def fetch_jobs(query, location):
             
     # sort jobs by match_score (highest first)
     jobs = sorted(jobs, key=lambda x: x["match_score"], reverse=True)
+    save_job_cache(job_cache)
     return jobs

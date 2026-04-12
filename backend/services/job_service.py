@@ -1,22 +1,47 @@
 import requests
 import urllib.parse
+from groq import Groq
+import os
+import json
 
-def extract_skills_from_text(text):
-    if not text:
-        return []
+def extract_skills_with_llm(text):
+    api_key = os.getenv("GROQ_API_KEY")
+    client = Groq(api_key=api_key)
 
-    # simple keyword-based skill list
-    common_skills = [
-        "python", "java", "sql", "machine learning", "data analysis",
-        "excel", "tensorflow", "pandas", "numpy", "communication",
-        "deep learning", "nlp", "flask", "django", "aws", "docker"
-    ]
+    prompt = f"""
+    Extract key skills required for this job.
 
-    text_lower = text.lower()
+    Return ONLY a valid JSON array of skills.
+    No explanation, no markdown.
 
-    found_skills = [skill for skill in common_skills if skill in text_lower]
+    Example:
+    ["python", "sql", "machine learning"]
 
-    return list(set(found_skills))
+    Job Description:
+    {text}
+    """
+
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    raw_output = response.choices[0].message.content
+
+    cleaned_output = raw_output.replace("```json", "").replace("```", "").strip()
+
+    try:
+        skills = json.loads(cleaned_output)
+    except:
+        skills = []
+
+    # normalize
+    skills = [s.lower().strip() for s in skills]
+
+    return list(set(skills))
+
 
 def fetch_jobs(query, location):
     url = "https://serpapi.com/search"
@@ -49,12 +74,19 @@ def fetch_jobs(query, location):
     
                 apply_link = f"https://www.google.com/search?q={encoded_query}"
 
+            description = job.get("description", "")
+            title = job.get("title", "")
+
+            combined_text = f"{title} {description}"
+
+            job_skills = extract_skills_with_llm(combined_text)
 
             jobs.append({
-                "title": job.get("title"),
+                "title": title,
                 "company": job.get("company_name"),
                 "location": job.get("location"),
-                "description": job.get("description"),
+                "description": description,
+                "job_skills": job_skills,
                 "apply_link": apply_link
             })
 

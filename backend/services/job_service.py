@@ -1,6 +1,23 @@
 import requests
 import urllib.parse
 
+def extract_skills_from_text(text):
+    if not text:
+        return []
+
+    # simple keyword-based skill list
+    common_skills = [
+        "python", "java", "sql", "machine learning", "data analysis",
+        "excel", "tensorflow", "pandas", "numpy", "communication",
+        "deep learning", "nlp", "flask", "django", "aws", "docker"
+    ]
+
+    text_lower = text.lower()
+
+    found_skills = [skill for skill in common_skills if skill in text_lower]
+
+    return list(set(found_skills))
+
 def fetch_jobs(query, location):
     url = "https://serpapi.com/search"
 

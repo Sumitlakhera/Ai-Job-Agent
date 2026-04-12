@@ -3,9 +3,10 @@ from groq import Groq
 import os
 import json
 
+USER_RESUME_DATA = {}
+
 def parse_resume(file):
     api_key = os.getenv("GROQ_API_KEY")
-    print("DEBUG API KEY:", api_key) 
 
     client = Groq(api_key=api_key)
 
@@ -47,6 +48,15 @@ def parse_resume(file):
         "error": "Failed to parse JSON",
         "raw_output": raw_output
     }
+    
+    raw_skills = structured_data.get("skills", [])
+
+    # normalize: lowercase + strip spaces
+    normalized_skills = [skill.lower().strip() for skill in raw_skills]
+
+    USER_RESUME_DATA["skills"] = list(set(normalized_skills))
+
+    print("DEBUG: Stored Skills:", USER_RESUME_DATA["skills"])
 
     return {
     "structured_data": structured_data,

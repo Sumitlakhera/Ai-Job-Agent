@@ -216,11 +216,19 @@ def fetch_jobs(query, location):
             if not resume_skills:
                 match_score, matched_skills, missing_skills = 0, [], job_skills
             else:
-                match_score, matched_skills, missing_skills = semantic_match(
-                resume_skills,
-                job_skills
-            )
-
+                try:
+                    match_score, matched_skills, missing_skills = semantic_match(
+                        resume_skills,
+                        job_skills
+                    )
+                except Exception as e:
+                    print("DEBUG: SEMANTIC MATCH FAILED:", str(e))
+    
+                    match_score, matched_skills, missing_skills = calculate_match(
+                        resume_skills,
+                        job_skills
+                    )
+               
             print("DEBUG MATCH:", match_score, matched_skills)
 
             explanation = generate_match_explanation(

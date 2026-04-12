@@ -98,16 +98,19 @@ def calculate_match(resume_skills, job_skills):
 def fetch_jobs(query, location):
     url = "https://serpapi.com/search"
 
+    search_query = f"{query} jobs"
     params = {
         "engine": "google_jobs",
-        "q": query,
-        "location": location,
-        "api_key": "dfe5675bb6e58c4521b8852f13e780773242ec357427d37ccfa3b6045013ef9a"   # temporary (we'll move to .env later)
+        "q": search_query,
+        "location": location.title(),
+        "api_key": os.getenv("SERP_API_KEY") 
     }
 
     response = requests.get(url, params=params)
     data = response.json()
-
+    print("DEBUG: API KEYS:", data.keys())
+    print("DEBUG: JOB COUNT:", len(data.get("jobs_results", [])))
+    print("DEBUG ERROR:", data.get("error"))
     jobs = []
 
     if "jobs_results" in data:
@@ -115,6 +118,7 @@ def fetch_jobs(query, location):
         resume_data = load_resume_data()
         resume_skills = resume_data.get("skills", [])
         for job in job_results:
+            print("DEBUG: PROCESSING JOB:", job.get("title"))
             apply_link = None
 
             if "related_links" in job and len(job["related_links"]) > 0:
@@ -134,6 +138,7 @@ def fetch_jobs(query, location):
             combined_text = f"{title} {description}"
 
             job_skills = extract_skills_with_llm(combined_text)
+            print("DEBUG: JOB SKILLS:", job_skills)
 
             if not resume_skills:
                 match_score, matched_skills, missing_skills = 0, [], job_skills
@@ -144,6 +149,7 @@ def fetch_jobs(query, location):
                 )
 
             print("DEBUG MATCH:", match_score, matched_skills)
+            
 
             jobs.append({
                 "title": title,
@@ -158,4 +164,7 @@ def fetch_jobs(query, location):
                 "apply_link": apply_link
             })
 
+            
+    # sort jobs by match_score (highest first)
+    jobs = sorted(jobs, key=lambda x: x["match_score"], reverse=True)
     return jobs

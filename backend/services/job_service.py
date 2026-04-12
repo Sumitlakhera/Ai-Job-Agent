@@ -3,6 +3,7 @@ import urllib.parse
 from groq import Groq
 import os
 import json
+from services.resume_service import USER_RESUME_DATA
 
 def extract_skills_with_llm(text):
     api_key = os.getenv("GROQ_API_KEY")
@@ -41,6 +42,20 @@ def extract_skills_with_llm(text):
     skills = [s.lower().strip() for s in skills]
 
     return list(set(skills))
+
+def calculate_match(resume_skills, job_skills):
+    if not job_skills:
+        return 0, [], []
+
+    resume_set = set(resume_skills)
+    job_set = set(job_skills)
+
+    matched = list(resume_set.intersection(job_set))
+    missing = list(job_set - resume_set)
+
+    score = (len(matched) / len(job_set)) * 100
+
+    return round(score, 2), matched, missing
 
 
 def fetch_jobs(query, location):
@@ -81,12 +96,25 @@ def fetch_jobs(query, location):
 
             job_skills = extract_skills_with_llm(combined_text)
 
+            resume_skills = USER_RESUME_DATA.get("skills", [])
+
+            match_score, matched_skills, missing_skills = calculate_match(
+                resume_skills,
+                job_skills
+            )
+
+            print("DEBUG MATCH:", match_score, matched_skills)
+
             jobs.append({
                 "title": title,
                 "company": job.get("company_name"),
                 "location": job.get("location"),
                 "description": description,
                 "job_skills": job_skills,
+                "resume_skills": resume_skills,
+                "match_score": match_score,
+                "matched_skills": matched_skills,
+                "missing_skills": missing_skills,
                 "apply_link": apply_link
             })
 

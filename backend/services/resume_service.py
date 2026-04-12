@@ -5,6 +5,11 @@ import json
 
 USER_RESUME_DATA = {}
 
+def save_resume_data(data):
+    with open("resume_cache.json", "w") as f:
+        json.dump(data, f)
+
+
 def parse_resume(file):
     api_key = os.getenv("GROQ_API_KEY")
 
@@ -55,6 +60,7 @@ def parse_resume(file):
     normalized_skills = [skill.lower().strip() for skill in raw_skills]
 
     USER_RESUME_DATA["skills"] = list(set(normalized_skills))
+    save_resume_data(USER_RESUME_DATA)
 
     return {
     "structured_data": structured_data,

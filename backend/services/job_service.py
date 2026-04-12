@@ -3,7 +3,31 @@ import urllib.parse
 from groq import Groq
 import os
 import json
-from services.resume_service import USER_RESUME_DATA
+import re
+
+def load_resume_data():
+    try:
+        with open("resume_cache.json", "r") as f:
+            return json.load(f)
+    except:
+        return {"skills": []}
+
+def normalize_and_split_skills(skills):
+    normalized = []
+
+    for skill in skills:
+        skill = skill.lower()
+        skill = skill.replace("-", " ")
+
+        # replace separators with comma
+        skill = re.sub(r"[&/|+]", ",", skill)
+
+        # split into parts
+        parts = [s.strip() for s in skill.split(",") if s.strip()]
+
+        normalized.extend(parts)
+
+    return list(set(normalized))
 
 def extract_skills_with_llm(text):
     api_key = os.getenv("GROQ_API_KEY")
@@ -47,15 +71,28 @@ def calculate_match(resume_skills, job_skills):
     if not job_skills:
         return 0, [], []
 
-    resume_set = set(resume_skills)
-    job_set = set(job_skills)
+    resume_skills = normalize_and_split_skills(resume_skills)
+    job_skills = normalize_and_split_skills(job_skills)
 
-    matched = list(resume_set.intersection(job_set))
-    missing = list(job_set - resume_set)
+    matched = []
+    missing = []
 
-    score = (len(matched) / len(job_set)) * 100
+    for job_skill in job_skills:
+        found = False
 
-    return round(score, 2), matched, missing
+        for res_skill in resume_skills:
+            # flexible matching (partial + containment)
+            if job_skill in res_skill or res_skill in job_skill:
+                matched.append(job_skill)
+                found = True
+                break
+
+        if not found:
+            missing.append(job_skill)
+
+    score = (len(matched) / len(job_skills)) * 100 if job_skills else 0
+
+    return round(score, 2), list(set(matched)), list(set(missing))
 
 
 def fetch_jobs(query, location):
@@ -75,6 +112,8 @@ def fetch_jobs(query, location):
 
     if "jobs_results" in data:
         job_results = data["jobs_results"][:5]  # limit to top 5 jobs
+        resume_data = load_resume_data()
+        resume_skills = resume_data.get("skills", [])
         for job in job_results:
             apply_link = None
 
@@ -84,8 +123,8 @@ def fetch_jobs(query, location):
             if not apply_link:
                 title = job.get("title", "")
                 company = job.get("company_name", "")
-                query = f"{title} {company} apply"
-                encoded_query = urllib.parse.quote(query)
+                search_query = f"{title} {company} apply"
+                encoded_query = urllib.parse.quote(search_query)
     
                 apply_link = f"https://www.google.com/search?q={encoded_query}"
 
@@ -96,12 +135,13 @@ def fetch_jobs(query, location):
 
             job_skills = extract_skills_with_llm(combined_text)
 
-            resume_skills = USER_RESUME_DATA.get("skills", [])
-
-            match_score, matched_skills, missing_skills = calculate_match(
+            if not resume_skills:
+                match_score, matched_skills, missing_skills = 0, [], job_skills
+            else:
+                match_score, matched_skills, missing_skills = calculate_match(
                 resume_skills,
                 job_skills
-            )
+                )
 
             print("DEBUG MATCH:", match_score, matched_skills)
 

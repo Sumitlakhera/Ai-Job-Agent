@@ -172,9 +172,11 @@ function App() {
           </div>
         </header>
 
-        <main className="mt-5 grid gap-4 xl:grid-cols-[0.95fr_1.35fr] xl:items-start">
-          <section className="space-y-4 xl:sticky xl:top-4">
-            <div className="rounded-[1.5rem] border border-white/10 bg-stone-900/70 p-5 shadow-xl shadow-black/20 backdrop-blur">
+        <main className="mt-5 grid gap-4 xl:grid-cols-[0.88fr_1.42fr] xl:items-start">
+          <section className="xl:sticky xl:top-4">
+            <div className="rounded-[1.5rem] border border-white/15 bg-white/[0.03] p-5 shadow-xl shadow-black/20 backdrop-blur-xl ring-1 ring-inset ring-white/10">
+
+
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-bold text-stone-50 sm:text-2xl">
@@ -200,7 +202,7 @@ function App() {
                     onChange={(event) =>
                       setResumeFile(event.target.files?.[0] || null)
                     }
-                    className="block w-full rounded-2xl border border-dashed border-stone-700 bg-stone-950/80 px-4 py-3 text-sm text-stone-300 file:mr-4 file:rounded-full file:border-0 file:bg-amber-400 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-stone-950 hover:file:bg-amber-300"
+                    className="block w-full rounded-2xl border border-white/10 bg-stone-950/35 px-4 py-3 text-sm text-stone-300 backdrop-blur-md file:mr-4 file:rounded-full file:border-0 file:bg-amber-400 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-stone-950 hover:file:bg-amber-300"
                   />
                 </label>
 
@@ -239,7 +241,7 @@ function App() {
               </div>
 
               {resumePreview ? (
-                <div className="mt-5 rounded-2xl border border-white/10 bg-stone-950/80 p-4">
+                <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.025] p-4 backdrop-blur-md">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">
                     Resume Preview
                   </h3>
@@ -249,16 +251,26 @@ function App() {
                 </div>
               ) : null}
             </div>
+          </section>
 
+          <section className="space-y-4">
             <div className="rounded-[1.5rem] border border-white/10 bg-gradient-to-br from-amber-400/15 via-stone-900 to-stone-900 p-5 shadow-xl shadow-black/20">
-              <h2 className="text-xl font-bold text-stone-50 sm:text-2xl">
-                2. Search Matched Jobs
-              </h2>
-              <p className="mt-1 text-sm text-stone-400">
-                Search works best after parsing a resume, but you can explore roles anytime.
-              </p>
 
-              <form className="mt-5 grid gap-4 md:grid-cols-[1.25fr_1fr_auto]" onSubmit={handleJobSearch}>
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-stone-50 sm:text-2xl">
+                    2. Search Matched Jobs
+                  </h2>
+                  <p className="mt-1 text-sm text-stone-400">
+                    Search works best after parsing a resume, but you can explore roles anytime.
+                  </p>
+                </div>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-stone-300">
+                  {jobs.length} jobs loaded
+                </span>
+              </div>
+
+              <form className="mt-5 grid gap-4 lg:grid-cols-[1.2fr_0.9fr_auto]" onSubmit={handleJobSearch}>
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-stone-300">
                     Job title or keyword
@@ -268,7 +280,7 @@ function App() {
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Frontend developer, Python engineer, data analyst..."
-                    className="w-full rounded-2xl border border-white/10 bg-stone-950/80 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-amber-300 focus:outline-none"
+                    className="w-full rounded-2xl border border-white/10 bg-stone-950/35 px-4 py-3 text-sm text-stone-100 backdrop-blur-md placeholder:text-stone-500 focus:border-amber-300 focus:outline-none"
                   />
                 </label>
 
@@ -281,14 +293,14 @@ function App() {
                     value={location}
                     onChange={(event) => setLocation(event.target.value)}
                     placeholder="Bengaluru, Remote, Hyderabad..."
-                    className="w-full rounded-2xl border border-white/10 bg-stone-950/80 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-amber-300 focus:outline-none"
+                    className="w-full rounded-2xl border border-white/10 bg-stone-950/35 px-4 py-3 text-sm text-stone-100 backdrop-blur-md placeholder:text-stone-500 focus:border-amber-300 focus:outline-none"
                   />
                 </label>
 
                 <button
                   type="submit"
                   disabled={isSearching}
-                  className="inline-flex items-center justify-center self-end rounded-full border border-white/10 bg-stone-100 px-5 py-3 text-sm font-semibold text-stone-950 transition hover:bg-white disabled:cursor-not-allowed disabled:bg-stone-300 md:min-w-[190px]"
+                  className="inline-flex items-center justify-center self-end rounded-full border border-white/10 bg-stone-100 px-5 py-3 text-sm font-semibold text-stone-950 transition hover:bg-white disabled:cursor-not-allowed disabled:bg-stone-300 lg:min-w-[190px]"
                 >
                   {isSearching ? 'Finding jobs...' : 'Find matching jobs'}
                 </button>
@@ -306,100 +318,101 @@ function App() {
                 </p>
               ) : null}
             </div>
-          </section>
 
-          <section className="rounded-[1.5rem] border border-white/10 bg-stone-900/80 p-5 shadow-xl shadow-black/20 backdrop-blur xl:max-h-[calc(100vh-7.25rem)] xl:overflow-hidden">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-stone-50 sm:text-2xl">
-                  Matched Opportunities
-                </h2>
-                <p className="mt-1 text-sm text-stone-400">
-                  Results are sorted by the strongest skill overlap first.
-                </p>
-              </div>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-stone-300">
-                {jobs.length} jobs
-              </span>
-            </div>
+            <div className="rounded-[1.5rem] border border-white/15 bg-white/[0.03] p-5 shadow-xl shadow-black/20 backdrop-blur-xl ring-1 ring-inset ring-white/10">
 
-            <div className="mt-5 space-y-4 xl:max-h-[calc(100vh-13rem)] xl:overflow-y-auto xl:pr-2">
-              {isSearching ? (
-                <JobSkeletonList />
-              ) : jobs.length > 0 ? (
-                jobs.map((job) => (
-                  <article
-                    key={`${job.title}-${job.company}`}
-                    className="rounded-[1.4rem] border border-white/10 bg-stone-950/70 p-4"
-                  >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold text-stone-50 sm:text-xl">
-                          {job.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-stone-400">
-                          {job.company} • {job.location}
-                        </p>
-                      </div>
-                      <div className="inline-flex items-center rounded-full bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200">
-                        Match {job.match_score}%
-                      </div>
-                    </div>
-
-                    {job.explanation ? (
-                      <p className="mt-4 text-sm leading-6 text-stone-300">
-                        {job.explanation}
-                      </p>
-                    ) : null}
-
-                    <div className="mt-4 grid gap-3 md:grid-cols-2">
-                      <TagSection
-                        title="Matched Skills"
-                        items={job.matched_skills}
-                        tone="emerald"
-                        emptyMessage="No matched skills identified yet."
-                      />
-                      <TagSection
-                        title="Missing Skills"
-                        items={job.missing_skills}
-                        tone="amber"
-                        emptyMessage="No obvious gaps were found."
-                      />
-                    </div>
-
-                    {job.description ? (
-                      <details className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <summary className="cursor-pointer text-sm font-semibold text-stone-200">
-                          View job description
-                        </summary>
-                        <p className="mt-3 max-h-56 overflow-y-auto pr-2 text-sm leading-6 text-stone-300">
-                          {job.description}
-                        </p>
-                      </details>
-                    ) : null}
-
-                    {job.apply_link ? (
-                      <a
-                        href={job.apply_link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-4 inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-stone-950 transition hover:bg-amber-300"
-                      >
-                        Open application link
-                      </a>
-                    ) : null}
-                  </article>
-                ))
-              ) : (
-                <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-stone-950/60 p-8 text-center">
-                  <p className="text-lg font-semibold text-stone-100">
-                    No jobs loaded yet
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-stone-400">
-                    Parse a resume, search for a role, and your matched opportunities will appear here.
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-stone-50 sm:text-2xl">
+                    Matched Opportunities
+                  </h2>
+                  <p className="mt-1 text-sm text-stone-400">
+                    Results are sorted by the strongest skill overlap first.
                   </p>
                 </div>
-              )}
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-stone-300">
+                  {jobs.length} jobs
+                </span>
+              </div>
+
+              <div className="mt-5 space-y-4 xl:max-h-[calc(100vh-19rem)] xl:overflow-y-auto xl:pr-2">
+                {isSearching ? (
+                  <JobSkeletonList />
+                ) : jobs.length > 0 ? (
+                  jobs.map((job) => (
+                    <article
+                      key={`${job.title}-${job.company}`}
+                      className="rounded-[1.4rem] border border-white/10 bg-white/[0.025] p-4 backdrop-blur-md"
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="text-lg font-bold text-stone-50 sm:text-xl">
+                            {job.title}
+                          </h3>
+                          <p className="mt-1 text-sm text-stone-400">
+                            {job.company} • {job.location}
+                          </p>
+                        </div>
+                        <div className="inline-flex items-center rounded-full bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200">
+                          Match {job.match_score}%
+                        </div>
+                      </div>
+
+                      {job.explanation ? (
+                        <p className="mt-4 text-sm leading-6 text-stone-300">
+                          {job.explanation}
+                        </p>
+                      ) : null}
+
+                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        <TagSection
+                          title="Matched Skills"
+                          items={job.matched_skills}
+                          tone="emerald"
+                          emptyMessage="No matched skills identified yet."
+                        />
+                        <TagSection
+                          title="Missing Skills"
+                          items={job.missing_skills}
+                          tone="amber"
+                          emptyMessage="No obvious gaps were found."
+                        />
+                      </div>
+
+                      {job.description ? (
+                        <details className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                          <summary className="cursor-pointer text-sm font-semibold text-stone-200">
+                            View job description
+                          </summary>
+                          <p className="mt-3 max-h-56 overflow-y-auto pr-2 text-sm leading-6 text-stone-300">
+                            {job.description}
+                          </p>
+                        </details>
+                      ) : null}
+
+                      {job.apply_link ? (
+                        <a
+                          href={job.apply_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-4 inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-stone-950 transition hover:bg-amber-300"
+                        >
+                          Open application link
+                        </a>
+                      ) : null}
+                    </article>
+                  ))
+                ) : (
+                  <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.02] p-8 text-center backdrop-blur-md">
+                    <p className="text-lg font-semibold text-stone-100">
+                      No jobs loaded yet
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-stone-400">
+                      Parse a resume, search for a role, and your matched opportunities will appear here.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </section>
         </main>
@@ -410,7 +423,7 @@ function App() {
 
 function InsightBlock({ title, items, emptyMessage, className = '' }) {
   return (
-    <div className={`rounded-2xl border border-white/10 bg-stone-950/70 p-4 ${className}`}>
+    <div className={`rounded-2xl border border-white/10 bg-white/[0.025] p-4 backdrop-blur-md ${className}`}>
       <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">
         {title}
       </h3>
@@ -449,7 +462,7 @@ function JobSkeletonList() {
       {[1, 2, 3].map((item) => (
         <div
           key={item}
-          className="animate-pulse rounded-[1.4rem] border border-white/10 bg-stone-950/70 p-4"
+          className="animate-pulse rounded-[1.4rem] border border-white/10 bg-white/[0.025] p-4 backdrop-blur-md"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-3">
@@ -465,7 +478,7 @@ function JobSkeletonList() {
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
               <div className="h-4 w-28 rounded-full bg-white/10" />
               <div className="mt-3 flex flex-wrap gap-2">
                 <div className="h-7 w-20 rounded-full bg-emerald-400/10" />
@@ -474,7 +487,7 @@ function JobSkeletonList() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
               <div className="h-4 w-28 rounded-full bg-white/10" />
               <div className="mt-3 flex flex-wrap gap-2">
                 <div className="h-7 w-24 rounded-full bg-amber-400/10" />
@@ -497,7 +510,7 @@ function TagSection({ title, items, tone, emptyMessage }) {
       : 'border-emerald-400/20 bg-emerald-400/10 text-emerald-100';
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
       <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">
         {title}
       </h4>

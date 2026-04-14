@@ -171,7 +171,7 @@ function App() {
                 <button
                   type="submit"
                   disabled={isUploading}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-5 py-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:bg-amber-200"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-5 py-3 text-sm font-semibold text-stone-950 transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300 hover:shadow-lg hover:shadow-amber-950/30 disabled:cursor-not-allowed disabled:bg-amber-200 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                 >
                   {isUploading ? 'Parsing resume...' : 'Upload and parse resume'}
                 </button>
@@ -395,14 +395,17 @@ function InsightBlock({ title, items, emptyMessage, className = '' }) {
 
 function MetricCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-      <p className="text-[11px] uppercase tracking-[0.28em] text-stone-400">
+    <div className="group rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition duration-300 hover:-translate-y-1 hover:border-amber-300/30 hover:bg-amber-300/10 hover:shadow-lg hover:shadow-amber-950/20">
+      <p className="text-[11px] uppercase tracking-[0.28em] text-stone-400 transition-colors duration-300 group-hover:text-amber-100">
         {label}
       </p>
-      <p className="mt-1 text-xl font-bold text-stone-50">{value}</p>
+      <p className="mt-1 text-xl font-bold text-stone-50 transition-colors duration-300 group-hover:text-white">
+        {value}
+      </p>
     </div>
   );
 }
+
 
 function JobSkeletonList() {
   return (

@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from flask_cors import CORS
 import os
 load_dotenv()
 
@@ -7,6 +8,7 @@ from routes.resume_routes import resume_bp
 from routes.job_routes import job_bp
 
 app = Flask(__name__)
+CORS(app)
 
 app.register_blueprint(resume_bp)
 app.register_blueprint(job_bp)

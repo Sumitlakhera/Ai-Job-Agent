@@ -2,11 +2,13 @@ from utils.pdf_parser import extract_text_from_pdf
 from groq import Groq
 import os
 import json
+from pathlib import Path
 
 USER_RESUME_DATA = {}
+CACHE_PATH = Path(__file__).resolve().parent.parent / "resume_cache.json"
 
 def save_resume_data(data):
-    with open("resume_cache.json", "w") as f:
+    with CACHE_PATH.open("w") as f:
         json.dump(data, f)
 
 

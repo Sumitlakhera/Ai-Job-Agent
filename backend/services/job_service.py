@@ -4,26 +4,29 @@ from groq import Groq
 import os
 import json
 import re
+from pathlib import Path
 from sentence_transformers import SentenceTransformer, util
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
+CACHE_PATH = Path(__file__).resolve().parent.parent / "resume_cache.json"
+JOB_CACHE_PATH = Path(__file__).resolve().parent.parent / "job_cache.json"
 
 def load_resume_data():
     try:
-        with open("resume_cache.json", "r") as f:
+        with CACHE_PATH.open("r") as f:
             return json.load(f)
     except:
         return {"skills": []}
     
 def load_job_cache():
     try:
-        with open("job_cache.json", "r") as f:
+        with JOB_CACHE_PATH.open("r") as f:
             return json.load(f)
     except:
         return {}
 
 def save_job_cache(cache):
-    with open("job_cache.json", "w") as f:
+    with JOB_CACHE_PATH.open("w") as f:
         json.dump(cache, f, indent=2)
 
 def normalize_and_split_skills(skills):

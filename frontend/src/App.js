@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
+import NET from 'vanta/dist/vanta.net.min';
+
 
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
@@ -37,6 +39,9 @@ function App() {
   const [searchError, setSearchError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const backgroundRef = useRef(null);
+  const vantaEffectRef = useRef(null);
+
 
   const hasResumeInsights =
     resumeData.skills.length > 0 ||
@@ -111,9 +116,40 @@ function App() {
     }
   }
 
+    useEffect(() => {
+    if (!backgroundRef.current || vantaEffectRef.current) return;
+
+    vantaEffectRef.current = NET({
+      el: backgroundRef.current,
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      color: 0xfbbf24,
+      backgroundColor: 0x0c0a09,
+      points: 8,
+      maxDistance: 20,
+      spacing: 20,
+      showDots: true,
+    });
+
+    return () => {
+      if (vantaEffectRef.current) {
+        vantaEffectRef.current.destroy();
+        vantaEffectRef.current = null;
+      }
+    };
+  }, []);
+
+
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1700px] flex-col px-3 py-5 sm:px-4 lg:px-6">
+    <div className="relative min-h-screen overflow-hidden bg-stone-950 text-stone-100">
+    <div
+      ref={backgroundRef}
+      className="absolute inset-0 z-0"
+    />
+    <div className="absolute inset-0 z-0 bg-stone-950/70" />
+
+    <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1700px] flex-col px-3 py-5 sm:px-4 lg:px-6">
         <header className="rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.18),_transparent_20%),linear-gradient(135deg,_rgba(28,25,23,0.96),_rgba(12,10,9,0.98))] px-5 py-5 shadow-2xl shadow-amber-950/20 sm:px-6 sm:py-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-4xl">

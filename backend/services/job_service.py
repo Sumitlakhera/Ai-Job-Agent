@@ -185,18 +185,23 @@ def generate_batch_explanations(jobs):
     except Exception as e:
         print("DEBUG BATCH ERROR:", str(e))
         return []
+    
+def normalize_job_query(query):
+    return " ".join(word.capitalize() for word in query.strip().split())
 
 
 def fetch_jobs(query, location):
     job_cache = load_job_cache()
     url = "https://serpapi.com/search"
 
-    search_query = f"{query} jobs"
+    normalized_query = normalize_job_query(query)
+    search_query = f"{normalized_query} jobs"
+
     params = {
         "engine": "google_jobs",
         "q": search_query,
         "location": location.title(),
-        "api_key": os.getenv("SERP_API_KEY") 
+        "api_key": os.getenv("SERP_API_KEY")
     }
 
     response = requests.get(url, params=params)

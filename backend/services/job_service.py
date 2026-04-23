@@ -7,7 +7,9 @@ import re
 from pathlib import Path
 from sentence_transformers import SentenceTransformer, util
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+embedding_model = None
+embedding_model_unavailable = False
 CACHE_PATH = Path(__file__).resolve().parent.parent / "resume_cache.json"
 JOB_CACHE_PATH = Path(__file__).resolve().parent.parent / "job_cache.json"
 
@@ -28,6 +30,25 @@ def load_job_cache():
 def save_job_cache(cache):
     with JOB_CACHE_PATH.open("w") as f:
         json.dump(cache, f, indent=2)
+
+
+def get_embedding_model():
+    global embedding_model, embedding_model_unavailable
+
+    if embedding_model is not None:
+        return embedding_model
+
+    if embedding_model_unavailable:
+        return None
+
+    try:
+        embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+    except Exception as e:
+        print("DEBUG: EMBEDDING MODEL UNAVAILABLE:", str(e))
+        embedding_model_unavailable = True
+        return None
+
+    return embedding_model
 
 def normalize_and_split_skills(skills):
     normalized = []
@@ -88,14 +109,19 @@ def semantic_match(resume_skills, job_skills, threshold=0.6):
     if not job_skills:
         return 0, [], []
 
+    current_model = get_embedding_model()
+
+    if current_model is None:
+        raise RuntimeError("Embedding model unavailable")
+
     resume_skills = normalize_and_split_skills(resume_skills)
     job_skills = normalize_and_split_skills(job_skills)
 
     matched = []
     missing = []
 
-    resume_embeddings = model.encode(resume_skills, convert_to_tensor=True)
-    job_embeddings = model.encode(job_skills, convert_to_tensor=True)
+    resume_embeddings = current_model.encode(resume_skills, convert_to_tensor=True)
+    job_embeddings = current_model.encode(job_skills, convert_to_tensor=True)
 
     for i, job_emb in enumerate(job_embeddings):
         similarities = util.cos_sim(job_emb, resume_embeddings)[0]

@@ -39,6 +39,7 @@ function App() {
   const [searchError, setSearchError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [copiedEmailKey, setCopiedEmailKey] = useState('');
   const backgroundRef = useRef(null);
   const vantaEffectRef = useRef(null);
 
@@ -113,6 +114,21 @@ function App() {
       );
     } finally {
       setIsSearching(false);
+    }
+  }
+
+  async function handleCopyEmail(job) {
+    const emailText = `Subject: ${job.email_subject || ''}\n\n${job.email_draft || ''}`;
+
+    try {
+      await navigator.clipboard.writeText(emailText);
+      const copyKey = `${job.title}-${job.company}`;
+      setCopiedEmailKey(copyKey);
+      window.setTimeout(() => {
+        setCopiedEmailKey('');
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy email draft:', error);
     }
   }
 
@@ -319,7 +335,7 @@ function App() {
               ) : null}
             </div>
 
-            <div className="rounded-[1.5rem] border border-white/15 bg-white/[0.03] p-5 shadow-xl shadow-black/20 backdrop-blur-xl ring-1 ring-inset ring-white/10">
+            <div className="rounded-[1.5rem] border border-white/15 bg-white/[0.03] p-5 shadow-xl shadow-black/20 backdrop-blur-xl ring-1 ring-inset ring-white/10 ]">
 
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -335,7 +351,7 @@ function App() {
                 </span>
               </div>
 
-              <div className="mt-5 space-y-4 xl:max-h-[calc(100vh-19rem)] xl:overflow-y-auto xl:pr-2">
+              <div className="mt-5 space-y-4  xl:max-h-[calc(100vh-19rem)] xl:overflow-y-auto xl:pr-2">
                 {isSearching ? (
                   <JobSkeletonList />
                 ) : jobs.length > 0 ? (
@@ -388,6 +404,35 @@ function App() {
                             {job.description}
                           </p>
                         </details>
+                      ) : null}
+
+                      {(job.email_subject || job.email_draft) ? (
+                        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-sm">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">
+                                AI Email Draft
+                              </h4>
+                              {job.email_subject ? (
+                                <p className="mt-2 text-sm font-semibold text-stone-100">
+                                  Subject: {job.email_subject}
+                                </p>
+                              ) : null}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleCopyEmail(job)}
+                              className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-stone-100 transition hover:bg-white/15"
+                            >
+                              {copiedEmailKey === `${job.title}-${job.company}` ? 'Copied' : 'Copy Email'}
+                            </button>
+                          </div>
+
+                          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-300">
+                            {job.email_draft}
+                          </p>
+                        </div>
                       ) : null}
 
                       {job.apply_link ? (
